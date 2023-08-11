@@ -1,0 +1,54 @@
+---
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+
+###Install packages
+```{r, echo = TRUE}
+#install.packages("grf")
+install.packages("dplyr")    # alternative installation of the %>%
+#install sufrep from zip file
+```
+
+###Data & libraries
+```{r, echo = TRUE}
+setwd("C:/Users/sathw/Downloads")
+data <-read.csv(file="Indoor.csv",head=TRUE,sep=",")
+data
+```
+
+###Data preparation
+```{r, echo = TRUE}
+
+library(dplyr) #For data manipulation
+# Define your treatment variable (X) and outcome variable (Y)
+treatment_var <- data$benzene;
+outcome_var <- data$Prob
+#BINaml <- rbinom(length(outcome_var),1,outcome_var);
+
+# Create a data matrix
+X <- as.matrix(data %>% select(socioeco.1, socioeco.2, socioeco.3, socioeco.4, race.1, race.2, birthplace, parity, benzene));
+
+
+```
+###Run
+```{r, echo = TRUE}
+library(grf)
+# Train the causal tree model
+causal_tree <- causal_forest(X = X, Y = outcome_var, W = treatment_var)
+predict(causal_tree,X,tune.num.reps=1000,estimate.variance = TRUE)
+causal_tree$Y.hat
+
+# Calculate the average treatment effect (ATE) of benzene levels on leukemia probability
+average_treatment_effect(causal_tree)
+variable_importance(causal_tree)
+```
+###Plot
+```{r, echo = TRUE}
+plot(causal_tree$Y.hat,outcome_var)
+```
+
+
